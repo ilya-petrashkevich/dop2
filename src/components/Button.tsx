@@ -2,17 +2,14 @@ import React from 'react';
 
 type ButtonPropsType = {
     name: string
-    callBack: () => void
+    callback: () => void
+    isDisabled: boolean
 }
+
 const Button = (props: ButtonPropsType) => {
-    const {callBack, name} = props
-    const onClickHandler = () => {
-        callBack()
-    }
+
     return (
-        <div>
-            <button onClick={onClickHandler} >{name}</button>
-        </div>
+        <button onClick={props.callback} disabled={props.isDisabled}>{props.name}</button>
     );
 };
 

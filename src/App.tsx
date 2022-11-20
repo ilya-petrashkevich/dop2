@@ -1,50 +1,108 @@
-import React, {useEffect, useState} from 'react';
+import React, {useState} from 'react';
 import './App.css';
-import Button from "./components/Button";
+import CounterBody from "./components/CounterBody";
+import SettingsBody from "./components/SettingsBody";
 
-type ShowType = {
-    id: number,
-    title: string,
-    completed: boolean
+export type ButtonDataType = {
+    name: string
+    callback: () => void //возможно maxToSet: number, minToSet: number надо будет убрать
+    isDisabled: boolean
+}
 
+type StateType = {
+    score: number
+    min: number
+    max: number
+    isSetMaxChanged: boolean
+    isSetMinChanged: boolean
 }
 
 function App() {
-    const [show, setShow] = useState<ShowType[]>([]);
-    // useEffect(() => {
-    //     fetch('https://jsonplaceholder.typicode.com/todos')
-    //         .then((response) => response.json())
-    //         .then((json) => setShow(json));
-    // }, []);
 
-    const useShowUp = () => {
-        fetch('https://jsonplaceholder.typicode.com/todos')
-            .then((response) => response.json())
-            .then((json) => setShow(json));
+    const [state, setState] = useState<StateType>(
+        {
+            score: 0,
+            min: 0,
+            max: 5,
+            isSetMaxChanged: false,
+            isSetMinChanged: false
+        }
+    )
 
-        console.log(show);
+    const [maxInput, setMaxInput] = useState(state.max);
+    const [minInput, setMinInput] = useState(state.min);
+
+    const increment = () => {
+        return state.score < state.max ? setState({...state, score: state.score + 1}) : '';
     }
-    const clean = () => {
-        setShow([])
+
+    const reset = () => {
+        setState({...state, score: minInput, max: maxInput, min: minInput})
+    }
+
+    // const getMaxMinFromSettingsInputs = (max: number, min: number) => {
+    //     setMaxInput(max);
+    //     setMinInput(min);
+    // }
+
+    const setValues = () => {
+        setState({
+            ...state,
+            score: minInput,
+            max: maxInput, //state.inputMax
+            min: minInput, //state.inputMin
+            isSetMaxChanged: false,
+            isSetMinChanged: false
+        });
+        console.log(state)
+    }
+
+    const checkMaxInputValue = (max: number, isSetMaxChanged: boolean) => {
+        setState({...state, isSetMaxChanged});
+        setMaxInput(max);
+        console.log(state)
+    }
+
+    const checkMinInputValue = (min: number, isSetMinChanged: boolean) => {
+        setState({...state, isSetMinChanged});
+        setMinInput(min);
+        console.log(state)
+    }
+
+    const incButton: ButtonDataType = {
+        name: 'INC',
+        callback: increment,
+        isDisabled: state.score === state.max
+    }
+    const resButton: ButtonDataType = {
+        name: 'RESET',
+        callback: reset,
+        isDisabled: state.score === state.min
+    }
+    const setButton: ButtonDataType = {
+        name: 'SET',
+        callback: setValues,
+        isDisabled: (!state.isSetMinChanged) && (!state.isSetMaxChanged)
     }
 
     return (
         <div className="App">
-            <Button name={'Show me'} callBack={useShowUp}/>
-            <Button name={'Clean me'} callBack={clean} />
 
-            <ul>
-                {show.map(e => {
-                    return (
-                        <li key={e.id}>
-                            <span>{e.id}</span>
-                            <span>{e.title}</span>
-                            <span>{`${e.completed}`}</span>
-                        </li>
-                    )
-                })
-                }
-            </ul>
+            <SettingsBody
+                setButton={setButton}
+                checkMaxInputValue={checkMaxInputValue}
+                checkMinInputValue={checkMinInputValue}
+                stateMax={state.max}
+                stateMin={state.min}
+            />
+
+            <CounterBody
+                score={state.score}
+                max={state.max}
+                incButton={incButton}
+                resButton={resButton}
+            />
+
         </div>
     );
 }
